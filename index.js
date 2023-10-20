@@ -34,6 +34,14 @@ async function run() {
         res.send(result)
     })
 
+    
+    app.get('/products/:brand/:id', async(req, res)=>{
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)};
+        const result = await productCollection.findOne(query);
+        res.send(result);
+    })
+
     app.get('/products/:brand', async(req, res)=>{
         const brand = req.params.brand;
         const query = {brand: brand};
@@ -42,18 +50,33 @@ async function run() {
         res.send(result)
     })
 
-    app.get('/products/:brand/:id', async(req, res)=>{
-        const id = req.params.id;
-        const query = {_id: new ObjectId(id)};
-        const result = await productCollection.findOne(query);
-        res.send(result);
-    })
-
     app.post('/products', async(req, res)=>{
         const newProduct = req.body;
         const result = await productCollection.insertOne(newProduct)
         res.send(result)
     })
+
+    app.put('/products/:brand/:id', async(req, res)=>{
+        const id = req.params.id;
+        const filter = {_id: new ObjectId(id)};
+        const options = {upsert: true};
+        const updatedProduct = req.body;
+        const product = {
+            $set: {
+                photo: updatedProduct.photo,
+                name: updatedProduct.name,
+                brand: updatedProduct.brand,
+                type: updatedProduct.type,
+                price: updatedProduct.price,
+                rating: updatedProduct.rating
+            }
+        }
+        const result = await productCollection.updateOne(filter, product, options);
+        res.send(result)
+    })
+
+
+    // cart related api's------------------------
 
     app.get('/cart', async(req, res)=>{
         const cursor = cartCollection.find();
@@ -82,25 +105,6 @@ async function run() {
         res.send(result)
     })
 
-
-    app.put('/products/:brand/:id', async(req, res)=>{
-        const id = req.params.id;
-        const filter = {_id: new ObjectId(id)};
-        const options = {upsert: true};
-        const updatedProduct = req.body;
-        const product = {
-            $set: {
-                photo: updatedProduct.photo,
-                name: updatedProduct.name,
-                brand: updatedProduct.brand,
-                type: updatedProduct.type,
-                price: updatedProduct.price,
-                rating: updatedProduct.rating
-            }
-        }
-        const result = await productCollection.updateOne(filter, product, options);
-        res.send(result)
-    })
 
 
     // Send a ping to confirm a successful connection
